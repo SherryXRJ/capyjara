@@ -1,0 +1,28 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: capyjara-oss-server
+  cloud:
+    nacos:
+      discovery:
+        namespace: 842c0dd8-d417-4151-8254-e1ebb4f2be22
+        server-addr: 192.168.1.1:8848
+        group: DEFAULT_GROUP
+      config:
+        namespace: 842c0dd8-d417-4151-8254-e1ebb4f2be22
+        server-addr: 192.168.1.1:8848
+        file-extension: yaml
+        group: DEFAULT_GROUP
+  config:
+    import:
+      # 优先级: 从低到高
+      - nacos:swagger.yaml
+      - nacos:redis.yaml
+      - nacos:minio.yaml
+      - nacos:oauth2-jwks.yaml
+      - nacos:${spring.application.name}.yaml
+springdoc:
+  info:
+    version: @project.version@

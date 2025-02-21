@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: capyjara-auth-server
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    nacos:
+      discovery:
+        namespace: public
+        server-addr: 192.168.1.1:8848
+        username: nacos
+        group: DEFAULT_GROUP
+      config:
+        namespace: public
+        server-addr: 192.168.1.1:8848
+        username: nacos
+        file-extension: yaml
+        group: DEFAULT_GROUP
+  config:
+    import:
+      # 优先级: 从低到高
+      - nacos:swagger.yaml
+      - nacos:flyway.yaml
+      - nacos:redis.yaml
+      - nacos:redisson.yaml
+      - nacos:mysql.yaml
+      - nacos:xxl-job.yaml
+      - nacos:capyjara-web-security.yaml
+      - nacos:${spring.application.name}.yaml
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/auth/oauth2/jwks
+  session:
+    timeout: 3600
+
+springdoc:
+  info:
+    version: @project.version@
+server:
+  servlet:
+    session:
+      cookie:
+        name: capy-session

@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.capy.capyjara.admin.mapper.TenantApplicationMapper">
+    <resultMap id="BaseResultMap" type="com.capy.capyjara.admin.entity.po.TenantApplication">
+        <!--@mbg.generated-->
+        <!--@Table t_tenant_application-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="tenant_id" jdbcType="INTEGER" property="tenantId"/>
+        <result column="application_id" jdbcType="INTEGER" property="applicationId"/>
+        <result column="enabled" jdbcType="BOOLEAN" property="enabled"/>
+        <result column="sort" jdbcType="TINYINT" property="sort"/>
+        <result column="create_user" jdbcType="INTEGER" property="createUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_user" jdbcType="INTEGER" property="updateUser"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="deleted" jdbcType="BOOLEAN" property="deleted"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        tenant_id,
+        application_id,
+        enabled,
+        sort,
+        create_user,
+        create_time,
+        update_user,
+        update_time,
+        deleted
+    </sql>
+    <insert id="insertSelective" keyColumn="id" keyProperty="id"
+            parameterType="com.capy.capyjara.admin.entity.po.TenantApplication" useGeneratedKeys="true">
+        <!--@mbg.generated-->
+        insert into t_tenant_application
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tenantId != null">
+                tenant_id,
+            </if>
+            <if test="applicationId != null">
+                application_id,
+            </if>
+            <if test="enabled != null">
+                enabled,
+            </if>
+            <if test="sort != null">
+                sort,
+            </if>
+            <if test="createUser != null">
+                create_user,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateUser != null">
+                update_user,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="deleted != null">
+                deleted,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tenantId != null">
+                #{tenantId,jdbcType=INTEGER},
+            </if>
+            <if test="applicationId != null">
+                #{applicationId,jdbcType=INTEGER},
+            </if>
+            <if test="enabled != null">
+                #{enabled,jdbcType=BOOLEAN},
+            </if>
+            <if test="sort != null">
+                #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="createUser != null">
+                #{createUser,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUser != null">
+                #{updateUser,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                #{deleted,jdbcType=BOOLEAN},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.capy.capyjara.admin.entity.po.TenantApplication">
+        <!--@mbg.generated-->
+        update t_tenant_application
+        <set>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId,jdbcType=INTEGER},
+            </if>
+            <if test="applicationId != null">
+                application_id = #{applicationId,jdbcType=INTEGER},
+            </if>
+            <if test="enabled != null">
+                enabled = #{enabled,jdbcType=BOOLEAN},
+            </if>
+            <if test="sort != null">
+                sort = #{sort,jdbcType=TINYINT},
+            </if>
+            <if test="createUser != null">
+                create_user = #{createUser,jdbcType=INTEGER},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateUser != null">
+                update_user = #{updateUser,jdbcType=INTEGER},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=BOOLEAN},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <resultMap id="TenantAppInfoResultMap" type="com.capy.capyjara.admin.entity.vo.TenantAppInfoVO">
+        <id column="rid" jdbcType="INTEGER" property="id"/>
+        <result column="tid" jdbcType="INTEGER" property="tenantId"/>
+        <result column="aid" jdbcType="INTEGER" property="applicationId"/>
+        <result column="renabled" jdbcType="BOOLEAN" property="enabled"/>
+        <result column="sort" jdbcType="TINYINT" property="sort"/>
+        <result column="rcreate_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="client_id" jdbcType="VARCHAR" property="clientId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+    </resultMap>
+    <select id="selectByParams" resultType="com.capy.capyjara.admin.entity.vo.TenantAppInfoVO"
+            resultMap="TenantAppInfoResultMap">
+        SELECT tta.id             as rid
+             , tta.tenant_id      as tid
+             , tta.application_id as aid
+             , tta.enabled        as renabled
+             , tta.sort           as sort
+             , ta.name            as name
+             , ta.client_id       as client_id
+             , tta.create_time    as rcreate_time
+             , ta.type            as type
+        from t_tenant_application tta
+                 left join t_application ta on tta.application_id = ta.id
+        <where>
+            tta.deleted = 0
+              and ta.deleted = 0
+              and ta.enabled = 1
+              and tta.tenant_id = #{dto.tenantId}
+            <if test="dto.enabled != null">
+                and tta.enabled = #{dto.enabled}
+            </if>
+            <if test="dto.name != null and dto.name != ''">
+                and ta.name like CONCAT('%', #{dto.name, jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.type != null">
+                and ta.type = #{dto.type}
+            </if>
+        </where>
+        order by tta.enabled desc, tta.create_time desc
+    </select>
+    <resultMap id="TenantAppDetailInfoVOResultMap"
+               type="com.capy.capyjara.admin.entity.vo.TenantAppDetailInfoVO">
+        <id column="rid" jdbcType="INTEGER" property="id"/>
+        <result column="tid" jdbcType="INTEGER" property="tenantId"/>
+        <result column="aid" jdbcType="INTEGER" property="applicationId"/>
+        <result column="sort" jdbcType="TINYINT" property="sort"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="access_method" jdbcType="INTEGER" property="accessMethod"/>
+        <result column="vendor" jdbcType="VARCHAR" property="vendor"/>
+        <result column="manager" jdbcType="VARCHAR" property="manager"/>
+        <result column="manager_tel" jdbcType="VARCHAR" property="managerTel"/>
+        <result column="website" jdbcType="VARCHAR" property="website"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="logo" jdbcType="VARCHAR" property="logo"/>
+        <result column="logo_url" jdbcType="VARCHAR" property="logoUrl"/>
+        <result column="client_id" jdbcType="VARCHAR" property="clientId"/>
+        <result column="redirect_url" jdbcType="VARCHAR" property="redirectUrl"/>
+    </resultMap>
+
+
+    <select id="selectListByParams"
+            resultMap="TenantAppDetailInfoVOResultMap">
+        SELECT tta.id             AS rid
+             , tta.tenant_id      AS tid
+             , tta.application_id AS aid
+             , tta.enabled        AS renabled
+             , tta.sort           AS sort
+             , ta.`name`          AS name
+             , ta.code            AS code
+             , ta.`type`          AS type
+             , ta.access_method   AS access_method
+             , ta.vendor          AS vendor
+             , ta.manager         AS manager
+             , ta.manager_tel     AS manager_tel
+             , ta.website         AS website
+             , ta.description     AS description
+             , ta.logo            AS logo
+             , ta.client_id       AS client_id
+             , ta.redirect_url    AS redirect_url
+             , ta.logo_url        as logo_url
+        FROM t_tenant_application tta
+                 LEFT JOIN t_application ta ON tta.application_id = ta.id
+        <where>
+            tta.deleted = 0
+              and ta.deleted = 0
+              and ta.enabled = 1
+              and tta.tenant_id = #{dto.tenantId}
+              and tta.enabled = 1
+            <if test="dto.name != null and dto.name != ''">
+                and ta.name like CONCAT('%', #{dto.name, jdbcType=VARCHAR}, '%')
+            </if>
+        </where>
+        order by tta.enabled desc, tta.update_time desc
+    </select>
+    <resultMap id="AppTenantInfoVoResultMap" type="com.capy.capyjara.admin.entity.vo.AppTenantInfoVo">
+        <id column="rid" jdbcType="INTEGER" property="id"/>
+        <result column="tid" jdbcType="INTEGER" property="tenantId"/>
+        <result column="aid" jdbcType="INTEGER" property="applicationId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="code" jdbcType="VARCHAR" property="code"/>
+        <result column="enabled" jdbcType="BOOLEAN" property="enabled"/>
+    </resultMap>
+
+    <select id="selectTenantByParams" resultType="com.capy.capyjara.admin.entity.vo.AppTenantInfoVo"
+            resultMap="AppTenantInfoVoResultMap">
+        SELECT tta.id             AS rid
+             , tta.tenant_id      AS tid
+             , tta.application_id AS aid
+             , tta.enabled        AS enabled
+             , tta.sort           AS sort
+             , tt.`name`          AS name
+             , tt.code            AS code
+             , tt.`type`          AS type
+        FROM t_tenant_application tta
+                 LEFT JOIN t_tenant tt ON tta.tenant_id = tt.id
+        <where>
+            tta.deleted = 0
+              and tt.deleted = 0
+              and tt.enabled = 1
+              and tta.application_id = #{dto.id}
+            <if test="dto.name != null and dto.name != ''">
+                and tt.name like CONCAT('%', #{dto.name, jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.enabled != null">
+                and tta.enabled = #{dto.enabled}
+            </if>
+            <if test="dto.type != null">
+                and tt.type = #{dto.type}
+            </if>
+        </where>
+        order by tta.create_time desc
+    </select>
+
+    <select id="selectList2ByParams" resultMap="TenantAppInfoResultMap">
+        SELECT tta.id             as rid
+        , tta.tenant_id      as tid
+        , tta.application_id as aid
+        , tta.enabled        as renabled
+        , tta.sort           as sort
+        , ta.name            as name
+        , ta.client_id       as client_id
+        , tta.create_time    as rcreate_time
+        , ta.type            as type
+        from t_tenant_application tta
+        left join t_application ta on tta.application_id = ta.id
+        <where>
+            tta.deleted = 0
+            and ta.deleted = 0
+            and ta.enabled = 1
+<!--            and ta.access_method =2-->
+            and tta.tenant_id = #{dto.tenantId}
+            and tta.enabled = 1
+            <if test="dto.name != null and dto.name != ''">
+                and ta.name like CONCAT('%', #{dto.name, jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="dto.type != null">
+                and ta.type = #{dto.type}
+            </if>
+        </where>
+        order by tta.update_time desc
+    </select>
+</mapper>

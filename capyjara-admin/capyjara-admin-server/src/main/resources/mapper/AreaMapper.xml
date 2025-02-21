@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.capy.capyjara.admin.mapper.AreaMapper">
+    <resultMap id="BaseResultMap" type="com.capy.capyjara.admin.entity.po.Area">
+        <!--@mbg.generated-->
+        <!--@Table t_area-->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="parent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="area_code" jdbcType="INTEGER" property="areaCode"/>
+        <result column="area_level" jdbcType="INTEGER" property="areaLevel"/>
+        <result column="area_name" jdbcType="VARCHAR" property="areaName"/>
+        <result column="lon" jdbcType="VARCHAR" property="lon"/>
+        <result column="lat" jdbcType="VARCHAR" property="lat"/>
+        <result column="deleted" jdbcType="INTEGER" property="deleted"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        id,
+        parent_id,
+        area_code,
+        area_level,
+        area_name,
+        lon,
+        lat,
+        deleted,
+        create_time,
+        update_time
+    </sql>
+    <resultMap id="AreaListResultMap" type="com.capy.capyjara.admin.entity.vo.AreaInfoListVO">
+        <id column="pid" jdbcType="INTEGER" property="id"/>
+        <result column="pparent_id" jdbcType="INTEGER" property="parentId"/>
+        <result column="parea_code" jdbcType="INTEGER" property="areaCode"/>
+        <result column="parea_level" jdbcType="INTEGER" property="areaLevel"/>
+        <result column="parea_name" jdbcType="VARCHAR" property="areaName"/>
+        <result column="plon" jdbcType="VARCHAR" property="lon"/>
+        <result column="plat" jdbcType="VARCHAR" property="lat"/>
+
+        <collection property="childAreas" ofType="com.capy.capyjara.admin.entity.vo.AreaInfoListVO">
+            <id column="cid" jdbcType="INTEGER" property="id"/>
+            <result column="cparent_id" jdbcType="INTEGER" property="parentId"/>
+            <result column="carea_code" jdbcType="INTEGER" property="areaCode"/>
+            <result column="carea_level" jdbcType="INTEGER" property="areaLevel"/>
+            <result column="carea_name" jdbcType="VARCHAR" property="areaName"/>
+            <result column="clon" jdbcType="VARCHAR" property="lon"/>
+            <result column="clat" jdbcType="VARCHAR" property="lat"/>
+
+            <collection property="childAreas" ofType="com.capy.capyjara.admin.entity.vo.AreaInfoListVO">
+                <id column="aid" jdbcType="INTEGER" property="id"/>
+                <result column="aparent_id" jdbcType="INTEGER" property="parentId"/>
+                <result column="aarea_code" jdbcType="INTEGER" property="areaCode"/>
+                <result column="aarea_level" jdbcType="INTEGER" property="areaLevel"/>
+                <result column="aarea_name" jdbcType="VARCHAR" property="areaName"/>
+                <result column="alon" jdbcType="VARCHAR" property="lon"/>
+                <result column="alat" jdbcType="VARCHAR" property="lat"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <select id="getAllAreaList" resultMap="AreaListResultMap" resultType="com.capy.capyjara.admin.entity.vo.AreaInfoListVO">
+        select province.id          as pid,
+               province.parent_id   as pparent_id,
+               province.area_code   as parea_code,
+               province.area_level  as parea_level,
+               province.area_name   as parea_name,
+               province.lon         as plon,
+               province.lat         as plat,
+               city.id              as cid,
+               city.parent_id       as cparent_id,
+               city.area_code       as carea_code,
+               city.area_level      as carea_level,
+               city.area_name       as carea_name,
+               city.lon             as clon,
+               city.lat             as clat,
+               area.id              as aid,
+               area.parent_id       as aparent_id,
+               area.area_code       as aarea_code,
+               area.area_level      as aarea_level,
+               area.area_name       as aarea_name,
+               area.lon             as alon,
+               area.lat             as alat
+        from t_area province
+                 left join t_area city on province.area_code = city.parent_id
+                 left join t_area area on city.area_code = area.parent_id
+        where province.parent_id = 0
+        <if test="query != null">
+            and CONCAT(province.area_name,city.area_name,area.area_name) LIKE CONCAT('%',#{query},'%')
+        </if>
+    </select>
+</mapper>
