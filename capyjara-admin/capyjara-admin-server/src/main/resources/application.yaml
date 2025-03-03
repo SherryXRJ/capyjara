@@ -23,13 +23,47 @@ spring:
       - nacos:redisson.yaml
       - nacos:mysql.yaml
       - nacos:xxl-job.yaml
-      - nacos:capyjara-web-security.yaml
+      - nacos:capyjara-mvc-security.yaml
       - nacos:${spring.application.name}.yaml
+  security:
+    oauth2:
+      client:
+        registration:
+          capyId:
+            provider: capyjara
+            client-id: capyId
+            client-secret: capySecret
+            client-authentication-method: client_secret_basic
+            authorization-grant-type: client_credentials
+            # Spring Security oauth2Login自动配置的endpoint
+            redirect-uri: http://192.168.216.138:8080/login/oauth2/code/{registrationId}
+            scope: profile
+            client-name: Capyjara
+          google:
+            client-id: your-app-client-id
+            client-secret: your-app-client-secret
+          github:
+            client-id: your-app-client-id
+            client-secret: your-app-client-secret
+          facebook:
+            client-id: your-app-client-id
+            client-secret: your-app-client-secret
+          okta:
+            client-id: your-app-client-id
+            client-secret: your-app-client-secret
+        provider:
+          capyjara:
+            authorization-uri: http://192.168.216.138:8080/auth/oauth2/authorize
+            token-uri: http://192.168.216.138:8080/auth/oauth2/token
+            jwk-set-uri: http://192.168.216.138:8080/auth/oauth2/jwks
+            #            user-info-uri: http://192.168.216.138:8080/auth/userinfo
+            user-info-uri: http://192.168.216.138:8080/auth/user
+            user-name-attribute: sub
+          okta:
+            authorization-uri: https://your-subdomain.oktapreview.com/oauth2/v1/authorize
+            token-uri: https://your-subdomain.oktapreview.com/oauth2/v1/token
+            user-info-uri: https://your-subdomain.oktapreview.com/oauth2/v1/userinfo
+            jwk-set-uri: https://your-subdomain.oktapreview.com/oauth2/v1/keys
 springdoc:
   info:
     version: @project.version@
-
-auth:
-  login:
-    lock:
-      enable: true

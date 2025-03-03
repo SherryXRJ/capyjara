@@ -1,6 +1,10 @@
 package com.capy.capyjara.common.security;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.map.MapUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +16,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Data
 @Builder
@@ -23,11 +28,19 @@ public class LoginUser implements UserDetails, OAuth2User {
 
     private String username;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private Collection<String> roles;
 
+    /**
+     * 租户id
+     */
+    private String tenantId;
+
+    /**
+     * Api权限
+     */
     private Collection<String> apiPermissions;
 
     /**
@@ -50,18 +63,21 @@ public class LoginUser implements UserDetails, OAuth2User {
      */
     private boolean credentialsExpired;
 
-    private Map<String, Object> attributes;
 
-    private String tenantId;
-
+    /**
+     * 将非敏感字段整理为OAuth2 attributes
+     */
     @Override
     public Map<String, Object> getAttributes() {
-        return this.attributes;
+        HashMap<String, Object> attributes = MapUtil.newHashMap();
+        BeanUtil.beanToMap(this, attributes, CopyOptions.create().setIgnoreProperties("password"));
+        return attributes;
     }
 
     /**
      * 返回用户角色以及api操作权限
      */
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<SimpleGrantedAuthority> roleSet = Optional.ofNullable(roles)
@@ -74,8 +90,7 @@ public class LoginUser implements UserDetails, OAuth2User {
                 .stream()
                 .map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 
-        return List.of(roleSet, authoritySet)
-                .stream().flatMap(Collection::stream).collect(Collectors.toSet());
+        return Stream.of(roleSet, authoritySet).flatMap(Collection::stream).collect(Collectors.toSet());
     }
 
     @Override

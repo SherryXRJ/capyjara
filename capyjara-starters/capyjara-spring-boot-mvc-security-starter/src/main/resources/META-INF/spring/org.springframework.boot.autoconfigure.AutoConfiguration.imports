@@ -1,0 +1,2 @@
+com.capy.capyjara.starter.mvc.ExceptionConfig
+com.capy.capyjara.starter.security.HttpSecurityMvcConfig

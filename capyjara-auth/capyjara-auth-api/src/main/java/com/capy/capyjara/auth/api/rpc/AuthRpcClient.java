@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(value = "light-weight-server",path = "/auth")
+@FeignClient(value = "capyjara-admin-server",path = "/auth")
 public interface AuthRpcClient {
 
     /**

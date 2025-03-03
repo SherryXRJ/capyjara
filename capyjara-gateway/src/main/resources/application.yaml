@@ -33,7 +33,7 @@ spring:
             client-authentication-method: client_secret_basic
             authorization-grant-type: authorization_code
             # Spring Security oauth2Login自动配置的endpoint
-            redirect-uri: http://192.168.216.109:8080/login/oauth2/code/{registrationId}
+            redirect-uri: http://192.168.216.138:8080/login/oauth2/code/{registrationId}
             scope: profile
             client-name: Capyjara
           google:
@@ -50,19 +50,19 @@ spring:
             client-secret: your-app-client-secret
         provider:
           capyjara:
-            authorization-uri: http://192.168.216.109:8080/auth/oauth2/authorize
-            token-uri: http://192.168.216.109:8080/auth/oauth2/token
-            jwk-set-uri: http://192.168.216.109:8080/auth/oauth2/jwks
-#            user-info-uri: http://192.168.216.109:8080/auth/userinfo
-            user-info-uri: http://192.168.216.109:8080/auth/me
-            user-name-attribute: sub
+            authorization-uri: http://192.168.216.138:8080/auth/oauth2/authorize
+            token-uri: http://192.168.216.138:8080/auth/oauth2/token
+            jwk-set-uri: http://192.168.216.138:8080/auth/oauth2/jwks
+#            user-info-uri: http://192.168.216.138:8080/auth/userinfo
+            user-info-uri: http://192.168.216.138:8080/auth/user
+            user-name-attribute: userId
           okta:
             authorization-uri: https://your-subdomain.oktapreview.com/oauth2/v1/authorize
             token-uri: https://your-subdomain.oktapreview.com/oauth2/v1/token
             user-info-uri: https://your-subdomain.oktapreview.com/oauth2/v1/userinfo
             jwk-set-uri: https://your-subdomain.oktapreview.com/oauth2/v1/keys
   session:
-    timeout: 60
+    timeout: 3600
     redis:
       repository-type: indexed
       namespace: "spring:session:gateway"

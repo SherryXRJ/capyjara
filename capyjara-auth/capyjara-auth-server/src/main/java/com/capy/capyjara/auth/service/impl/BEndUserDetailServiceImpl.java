@@ -41,7 +41,6 @@ public class BEndUserDetailServiceImpl implements UserDetailsService {
                 .tenantId("test-TenantId")
                 .password("{noop}password")
                 .roles(roles)
-                .attributes(attributes)
                 .enable(true)
                 .locked(false)
                 .accountExpired(false)

@@ -59,7 +59,7 @@
 
         <dependency>
             <groupId>com.capy</groupId>
-            <artifactId>capyjara-spring-boot-mybatis-starter</artifactId>
+            <artifactId>capyjara-spring-boot-mybatis-plus-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -87,7 +87,7 @@
 
         <dependency>
             <groupId>com.capy</groupId>
-            <artifactId>capyjara-spring-boot-mvc-starter</artifactId>
+            <artifactId>capyjara-spring-boot-mvc-security-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 

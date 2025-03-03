@@ -16,16 +16,16 @@ import java.util.function.Function;
 
 /**
  * 支持OAuth2多设备多端登录
- *
+ * <p>
  * 在执行oauth2login流程前 生成deviceId并写入cookie;
  * {@link ReactiveRedisOAuth2AuthorizedClientService} 执行oauth2授权码授权流程时，将deviceId作为当前设备端的key写入redis
  * Spring Security执行完oauth2login流程后 将access_token refresh_token等信息作为value写入redis。这样不同device端 就可以绑定不同的access_token refresh_token
- *
+ * <p>
  * 在BFF架构中，access_token与refresh_token都由后端存储。
  * 前后端分离模式下，前后端由session与cookie保持登录状态。
  * 前端每次请求后端接口时，由Spring Gateway代理获取当前用户的access_token信息，并基于TokenRelay策略 携带token将请求转发到各个Resource Server。
  * tips: 为什么不使用sessionId，而需要生成一个自定义的deviceId呢?
- *
+ * <p>
  * 在执行oauth2login流程前，Spring会生成一个sessionId。
  * Spring Security在默认的会话管理策略中，为了防止Session Fixation(会话固定攻击)，在登录成功后会刷新sessionId。
  * 这种情况下因为sessionId发生变化，因此无法基于sessionId绑定多端的设备

@@ -22,11 +22,11 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
  * 前后端分离模式下的Spring Security oauth2login配置
  * <p>
  * OAuth2认证成功后，将access_token写入Cookie中
- *
+ * <p>
  * <b>Note:</b>如果需要由前端管理access token，推荐使用OAuth2 PKCE(Auth-Server已支持PKCE模式) {@link com.capy.capyjara.auth.config.AuthSecurityConfig#clientRepository()}
  *
  * @see CookieAuthenticationSuccessHandler
- * @see com.capy.capyjara.starter.web.security.converter.CookieBearerTokenResolver
+ * @see com.capy.capyjara.starter.security.converter.CookieBearerTokenResolver
  * @see NoOpServerSecurityContextRepository
  * @see org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository
  * @see <a href="https://docs.spring.io/spring-authorization-server/reference/1.2/guides/how-to-pkce.html">how-to-pkce</a>

@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.capy.capyjara.starter.mybatisplus.config.MybatisPlusConfig \
+com.capy.capyjara.starter.mybatisplus.handler.CommonMetaObjectHandler

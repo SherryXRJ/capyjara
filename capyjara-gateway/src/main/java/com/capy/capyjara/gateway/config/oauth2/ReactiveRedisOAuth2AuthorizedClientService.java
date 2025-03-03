@@ -1,6 +1,7 @@
 package com.capy.capyjara.gateway.config.oauth2;
 
 import cn.hutool.core.collection.CollectionUtil;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.security.core.Authentication;
@@ -12,6 +13,7 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -37,14 +39,17 @@ public class ReactiveRedisOAuth2AuthorizedClientService implements ReactiveOAuth
     /**
      * redis中授权信息有效时间
      */
+    @Setter
     private Duration oAuth2AuthorizedLiveDuration = Duration.ofSeconds(30);
 
     protected final ReactiveClientRegistrationRepository clientRegistrationRepository;
 
     protected final ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
 
+    @Setter
     protected BiFunction<OAuth2AuthorizedClient, Authentication, Map<String, Object>> oAuth2AuthorizedClient2HashConverter = new DefaultOAuth2AuthorizedClient2HashConverter();
 
+    @Setter
     protected Function<Map<Object, Object>, Mono<OAuth2AuthorizedClient>> hash2AuthorizedClientConverter = new DefaultHash2OAuth2AuthorizedClientConverter();
 
     public ReactiveRedisOAuth2AuthorizedClientService(ReactiveRedisTemplate<String, Object> reactiveRedisTemplate, ReactiveClientRegistrationRepository reactiveClientRegistrationRepository) {
@@ -97,18 +102,6 @@ public class ReactiveRedisOAuth2AuthorizedClientService implements ReactiveOAuth
                 .then(Mono.empty());
     }
 
-    public void setHash2AuthorizedClientConverter(Function<Map<Object, Object>, Mono<OAuth2AuthorizedClient>> hash2AuthorizedClientConverter) {
-        this.hash2AuthorizedClientConverter = hash2AuthorizedClientConverter;
-    }
-
-    public void setOAuth2AuthorizedClient2HashConverter(BiFunction<OAuth2AuthorizedClient, Authentication, Map<String, Object>> oAuth2AuthorizedClient2HashConverter) {
-        this.oAuth2AuthorizedClient2HashConverter = oAuth2AuthorizedClient2HashConverter;
-    }
-
-    public void setOAuth2AuthorizedLiveDuration(Duration oAuth2AuthorizedLiveDuration) {
-        this.oAuth2AuthorizedLiveDuration = oAuth2AuthorizedLiveDuration;
-    }
-
     private static final class DefaultOAuth2AuthorizedClient2HashConverter implements BiFunction<OAuth2AuthorizedClient, Authentication, Map<String, Object>> {
 
         @Override
@@ -142,6 +135,10 @@ public class ReactiveRedisOAuth2AuthorizedClientService implements ReactiveOAuth
         @Override
         @SuppressWarnings("unchecked")
         public Mono<OAuth2AuthorizedClient> apply(Map<Object, Object> map) {
+            if (CollectionUtils.isEmpty(map)) {
+                return Mono.empty();
+            }
+
             String clientRegistrationId = (String) map.get("clientRegistrationId");
 
             String principalName = (String) map.get("principalName");
@@ -153,8 +150,8 @@ public class ReactiveRedisOAuth2AuthorizedClientService implements ReactiveOAuth
             Set<String> accessTokenScopes = (Set<String>) map.getOrDefault("accessTokenScopes", Collections.emptySet());
 
             OAuth2AccessToken oAuth2AccessToken = new OAuth2AccessToken(OAuth2AccessToken.TokenType.BEARER, accessTokenValue,
-                    Instant.parse(accessTokenIssuedAt),
-                    Instant.parse(accessTokenExpiresAt),
+                    Objects.nonNull(accessTokenIssuedAt) ? Instant.parse(accessTokenIssuedAt) : null,
+                    Objects.nonNull(accessTokenExpiresAt) ? Instant.parse(accessTokenExpiresAt) : null,
                     accessTokenScopes);
 
             String refreshTokenValue = (String) map.get("refreshTokenValue");

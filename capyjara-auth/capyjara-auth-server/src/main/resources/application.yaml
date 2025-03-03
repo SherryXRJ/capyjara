@@ -25,7 +25,7 @@ spring:
       - nacos:redisson.yaml
       - nacos:mysql.yaml
       - nacos:xxl-job.yaml
-      - nacos:capyjara-web-security.yaml
+      - nacos:capyjara-mvc-security.yaml
       - nacos:${spring.application.name}.yaml
   security:
     oauth2:

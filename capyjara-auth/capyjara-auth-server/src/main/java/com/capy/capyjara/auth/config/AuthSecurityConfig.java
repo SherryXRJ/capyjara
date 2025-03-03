@@ -3,15 +3,13 @@ package com.capy.capyjara.auth.config;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.http.ContentType;
 import com.capy.capyjara.auth.api.constant.AuthResultEnum;
-import com.capy.capyjara.auth.oauth2.CapyjaraOAuth2TokenCustomizer;
-import com.capy.capyjara.auth.jackson.LoginUserMixin;
+import com.capy.capyjara.auth.oauth2.OAuth2JwtTokenCustomizer;
+import com.capy.capyjara.auth.oauth2.redis.service.RedisOAuth2AuthorizationService;
 import com.capy.capyjara.auth.service.impl.BEndUserDetailServiceImpl;
 import com.capy.capyjara.common.response.Result;
-import com.capy.capyjara.common.security.LoginUser;
-import com.capy.capyjara.starter.web.CapyjaraWebStarterProperty;
-import com.capy.capyjara.starter.web.security.exception.ForbiddenEntryPoint;
-import com.capy.capyjara.starter.web.security.exception.UnauthorizedEntryPoint;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.capy.capyjara.starter.MvcSecurityStarterProperties;
+import com.capy.capyjara.starter.security.exception.ForbiddenEntryPoint;
+import com.capy.capyjara.starter.security.exception.UnauthorizedEntryPoint;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,20 +29,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.jackson2.CoreJackson2Module;
-import org.springframework.security.jackson2.SecurityJackson2Modules;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
@@ -53,7 +46,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import java.io.IOException;
@@ -74,7 +66,7 @@ public class AuthSecurityConfig {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final CapyjaraWebStarterProperty capyjaraWebStarterProperty;
+    private final MvcSecurityStarterProperties mvcSecurityStarterProperties;
 
     private final AuthServerProperties authServerProperties;
 
@@ -82,30 +74,32 @@ public class AuthSecurityConfig {
 
     private final SessionProperties sessionProperties;
 
+
     /* ------------ Spring Security OAuth2 AuthorizationServer Configuration --------------*/
 
     /**
      *
-     * 基于Spring Security OAuth2默认配置进行修改调整 {@link OAuth2AuthorizationServerConfigurer} <br/>
-     *
-     * OAuth2相关配置(该配置只对 "/oauth2/**" 相关接口生效) <br/>
-     *
-     * 需要注意OAuth2只进行授权(Authorization)，并不直接进行认证(Authentication) <br/>
-     * 为了便于区分这2个流程, 该配置类中分别配置了认证、授权 2条SecurityFilterChain <br/>
+     * 基于Spring Security OAuth2默认配置进行修改调整 {@link OAuth2AuthorizationServerConfigurer}
+     * <p>
+     * OAuth2相关配置(该配置只对 "/oauth2/**" 相关接口生效)
+     * <p>
+     * 需要注意OAuth2只进行授权(Authorization)，并不直接进行认证(Authentication)
+     * 为了便于区分这2个流程, 该配置类中分别配置了认证、授权 2条SecurityFilterChain
      *
      * @see OAuth2AuthorizationServerConfigurer
-     * @see CapyjaraOAuth2TokenCustomizer
+     * @see OAuth2JwtTokenCustomizer
+     * @see com.capy.capyjara.auth.oauth2.redis.config.AuthorizationServiceRedisConfig
+     * @see RedisOAuth2AuthorizationService
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain oAuth2authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain oAuth2authorizationServerSecurityFilterChain(HttpSecurity http, RedisOAuth2AuthorizationService redisOAuth2AuthorizationService) throws Exception {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         //  可自定义修改OAuth2相关配置
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = http.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
 
         authorizationServerConfigurer
-//                .authorizationService(authorizationService())
-//                .tokenEndpoint(new CapyjaraTokenEndpointCustomizer())
+                .authorizationService(redisOAuth2AuthorizationService)
                 .oidc(withDefaults())   //  启用Oidc
         ;
 
@@ -139,7 +133,7 @@ public class AuthSecurityConfig {
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .tokenSettings(TokenSettings.builder().accessTokenTimeToLive(Duration.ofSeconds(100)).build())
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(false).requireProofKey(false).build())
-                .redirectUri("http://192.168.216.109:8080/login/oauth2/code/capyId")
+                .redirectUri("http://192.168.216.138:8080/login/oauth2/code/capyId")
                 .scope(OidcScopes.PROFILE)
                 .scope(OidcScopes.OPENID)
                 .scope("myscope")
@@ -147,34 +141,6 @@ public class AuthSecurityConfig {
         InMemoryRegisteredClientRepository repository = new InMemoryRegisteredClientRepository(client);
         return repository;
     }
-
-    /**
-     * Authorization Service 负责授权操作<br/>
-     *
-     * 例如: 授权码模式下分发、删除code; 授权完成后分发、删除access_token ;分发、删除refresh_token
-     *
-     */
-//    @Bean
-    public OAuth2AuthorizationService authorizationService(){
-        //  todo: Security内置了JDBC操作模式，可使用Redis进行存储
-        JdbcOAuth2AuthorizationService authorizationService = new JdbcOAuth2AuthorizationService(jdbcTemplate, clientRepository());
-
-        //  处理自定义字段序列化问题
-        JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper rowMapper =
-                new JdbcOAuth2AuthorizationService.OAuth2AuthorizationRowMapper(clientRepository());
-
-        ClassLoader classLoader = LoginUser.class.getClassLoader();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModules(new CoreJackson2Module());
-        objectMapper.registerModules(SecurityJackson2Modules.getModules(classLoader));
-        objectMapper.registerModule(new OAuth2AuthorizationServerJackson2Module());
-        objectMapper.addMixIn(LoginUser.class, LoginUserMixin.class);
-        rowMapper.setObjectMapper(objectMapper);
-
-        authorizationService.setAuthorizationRowMapper(rowMapper);
-        return authorizationService;
-    }
-
 
     /**
      * 可自定义授权uri地址
@@ -195,7 +161,7 @@ public class AuthSecurityConfig {
     /**
      *
      * 认证(Authentication)FilterChain,
-     * 该FilterChain的优先级低于{@link AuthSecurityConfig#oAuth2authorizationServerSecurityFilterChain(HttpSecurity)} <br/>
+     * 该FilterChain的优先级低于{@link AuthSecurityConfig#oAuth2authorizationServerSecurityFilterChain(HttpSecurity, RedisOAuth2AuthorizationService)}
      *
      * 提供各类认证方式(账密、短信、邮件)
      *
@@ -204,7 +170,9 @@ public class AuthSecurityConfig {
     @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     public SecurityFilterChain authenticationFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/login/**", "/test/**", "/oauth2/**", "/me")
+                .securityMatcher("/login/**"
+//                        , "/user"
+                )
                 .authorizeHttpRequests(authorize ->
                     authorize.requestMatchers("/login/**").permitAll()
                             .anyRequest().authenticated()
@@ -221,10 +189,8 @@ public class AuthSecurityConfig {
 //                    .requestMatchers("/test/**").authenticated()
 //                    ;
 //                })
-                //  todo 修改后置处理器
                 .formLogin(httpSecurityFormLoginConfigurer ->
                         httpSecurityFormLoginConfigurer
-                                .successHandler(new LoginUserRedisCacheLoginSuccessHandler(redisTemplate, sessionProperties.getTimeout()))
                                 .failureHandler(failureHandler())
                 )
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
@@ -256,14 +222,6 @@ public class AuthSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return CustomizedPasswordEncoderFactory.createPasswordEncoder(authServerProperties.getBcryptLength());
-    }
-
-    @Deprecated
-    @Bean
-    public AuthenticationSuccessHandler successHandler() {
-        return (request, response, authentication) ->
-                //  todo: redis存储用户信息
-                writeJsonResponse(response, Result.ok(authentication.getPrincipal()));
     }
 
     @Bean

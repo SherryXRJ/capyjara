@@ -1,4 +1,4 @@
-package com.capy.capyjara.common.entity;//package com.capy.capyjara.common.entity;
+package com.capy.capyjara.common.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;

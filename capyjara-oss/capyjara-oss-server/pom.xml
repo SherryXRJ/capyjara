@@ -51,7 +51,7 @@
 
         <dependency>
             <groupId>com.capy</groupId>
-            <artifactId>capyjara-spring-boot-mvc-starter</artifactId>
+            <artifactId>capyjara-spring-boot-mvc-security-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 

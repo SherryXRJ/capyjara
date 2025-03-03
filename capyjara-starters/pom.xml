@@ -17,10 +17,10 @@
     <modules>
         <module>capyjara-spring-boot-springdoc-starter</module>
         <module>capyjara-spring-boot-redis-starter</module>
-        <module>capyjara-spring-boot-mvc-starter</module>
+        <module>capyjara-spring-boot-mvc-security-starter</module>
         <module>capyjara-spring-boot-minio-starter</module>
         <module>capyjara-spring-boot-task-starter</module>
-        <module>capyjara-spring-boot-mybatis-starter</module>
+        <module>capyjara-spring-boot-mybatis-plus-starter</module>
     </modules>
 
     <dependencies>

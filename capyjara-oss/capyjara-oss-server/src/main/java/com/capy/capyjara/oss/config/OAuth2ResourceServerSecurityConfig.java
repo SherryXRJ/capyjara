@@ -1,7 +1,7 @@
 package com.capy.capyjara.oss.config;
 
 
-import com.capy.capyjara.starter.web.security.converter.JwtRedisLoginUserConverter;
+import com.capy.capyjara.starter.security.converter.JwtLoginUserConverter;
 import com.capy.capyjara.swagger.SwaggerConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
@@ -18,7 +18,7 @@ public class OAuth2ResourceServerSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRedisLoginUserConverter jwtRedisLoginUserConverter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtLoginUserConverter jwtLoginUserConverter) throws Exception {
         http
                 .authorizeHttpRequests((authorize) ->
                         authorize
@@ -28,7 +28,7 @@ public class OAuth2ResourceServerSecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(policy -> policy.sessionCreationPolicy(SessionCreationPolicy.NEVER))
                 .oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer -> httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer
-                        -> jwtConfigurer.jwtAuthenticationConverter(jwtRedisLoginUserConverter)))
+                        -> jwtConfigurer.jwtAuthenticationConverter(jwtLoginUserConverter)))
 //                .exceptionHandling(httpSecurityExceptionHandlingConfigurer -> {
 //                    httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(accessDeniedHandler());
 //                    httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(authenticationEntryPoint());
